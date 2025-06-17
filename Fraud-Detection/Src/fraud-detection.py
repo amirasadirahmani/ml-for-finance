@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 
 
-df = pd.read_csv('./Data/creditcard.csv')
+df = pd.read_csv('../Data/creditcard.csv')
 
 
 X = df.drop('Class', axis=1)
@@ -37,3 +37,23 @@ y = y.values
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
+
+
+class SimpleDataSet(Dataset):
+    def __init__(self,features, lables):
+        self.features = torch.FloatTensor(features)
+        self.labels = torch.LongTensor(lables)
+    
+    def __len__(self):
+        return len(self.labels)
+    
+    def __getitem__(self, idx):
+        return self.features[idx], self.labels[idx]
+    
+
+train_dataset = SimpleDataSet(X_train,y_train)
+test_dataset = SimpleDataSet(X_test,y_test)
+
+batch_size = 128 
+train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle = True)
+test_loader = DataLoader(test_dataset,batch_size = batch_size)
