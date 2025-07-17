@@ -54,6 +54,7 @@ class SimpleDataSet(Dataset):
 train_dataset = SimpleDataSet(X_train,y_train)
 test_dataset = SimpleDataSet(X_test,y_test)
 
-batch_size = 128 
+batch_size = 120
 train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle = True)
 test_loader = DataLoader(test_dataset,batch_size = batch_size)
+
