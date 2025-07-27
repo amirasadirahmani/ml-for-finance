@@ -81,3 +81,40 @@ plt.suptitle('')
 plt.tight_layout()
 plt.show()
 
+# Separate features and target
+# جداسازی ویژگی‌ها و هدف
+X = df.drop('Class', axis=1)
+y = df['Class']
+
+# Split the data into train and test sets
+# تقسیم داده‌ها به مجموعه آموزش و تست
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+print(f"Training set size: {X_train.shape[0]}")
+print(f"اندازه مجموعه آموزش: {X_train.shape[0]}")
+print(f"Test set size: {X_test.shape[0]}")
+print(f"اندازه مجموعه تست: {X_test.shape[0]}")
+
+# Initialize and fit the scaler on training data only
+# راه‌اندازی و تنظیم نرمال‌سازی فقط روی داده‌های آموزش
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)  # fit_transform for training data
+                                                # fit_transform برای داده‌های آموزش
+
+X_test_scaled = scaler.transform(X_test)        # transform only for test data
+                                                # فقط transform برای داده‌های تست
+
+print("Data normalization completed!")
+print("نرمال‌سازی داده‌ها تکمیل شد!")
+
+# Convert to PyTorch tensors
+# تبدیل به تنسورهای PyTorch
+X_train_tensor = torch.FloatTensor(X_train_scaled)
+X_test_tensor = torch.FloatTensor(X_test_scaled)
+y_train_tensor = torch.FloatTensor(y_train.values)
+y_test_tensor = torch.FloatTensor(y_test.values)
+
+print("Data converted to PyTorch tensors!")
+print("داده‌ها به تنسورهای PyTorch تبدیل شدند!")
