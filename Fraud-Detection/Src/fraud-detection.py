@@ -1,60 +1,83 @@
-import torch
 import pandas as pd
 import numpy as np
-from torch.utils.data import Dataset,DataLoader
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader, TensorDataset
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler,MinMaxScaler
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, precision_recall_curve
+import matplotlib.pyplot as plt
+import seaborn as sns
+from collections import Counter
+import warnings
+warnings.filterwarnings('ignore')
 
+# Set random seeds for reproducibility
+# تنظیم seed برای تکرارپذیری نتایج
+torch.manual_seed(42)
+np.random.seed(42)
 
-df = pd.read_csv('../Data/creditcard.csv')
+# Load the dataset
+df = pd.read_csv('creditcard.csv')
 
+# Basic information about the dataset
+print("Dataset shape:", df.shape)
 
-X = df.drop('Class', axis=1)
-y = df['Class']
+print("Dataset info:")
+print(df.info())
 
+print("\nFirst few rows:")
+print(df.head())
 
-amount_scaler = MinMaxScaler()
-time_scaler = MinMaxScaler()
-v_scaler = StandardScaler()
+# Check for missing values
+print("\nMissing values:")
+print("مقادیر گم‌شده:")
+print(df.isnull().sum())
 
+# Check class distribution
+print("\nClass distribution:")
+print("توزیع کلاس‌ها:")
+class_counts = df['Class'].value_counts()
+print(class_counts)
+print(f"Fraud percentage: {(class_counts[1] / len(df)) * 100:.2f}%")
+print(f"درصد تقلب: {(class_counts[1] / len(df)) * 100:.2f}%")
 
-if 'Time' in X.columns:
-    X['Time'] = time_scaler.fit_transform(X[['Time']])
-    
-if 'Amount' in X.columns:
-    X['Amount'] = amount_scaler.fit_transform(X[['Amount']])
-    
+# Visualize class distribution
+# تجسم توزیع کلاس‌ها
+plt.figure(figsize=(12, 5))
 
-v_columns = [col for col in X.columns if col.startswith('V')]
-if v_columns:
-    X[v_columns] = v_scaler.fit_transform(X[v_columns])
-    
+plt.subplot(1, 2, 1)
+df['Class'].value_counts().plot(kind='bar')
+plt.title('Class Distribution\nتوزیع کلاس‌ها')
+plt.xlabel('Class (0: Normal, 1: Fraud)\nکلاس (0: عادی، 1: تقلب)')
+plt.ylabel('Count\nتعداد')
 
-X = X.values
-y = y.values
+plt.subplot(1, 2, 2)
+df['Class'].value_counts().plot(kind='pie', autopct='%1.1f%%')
+plt.title('Class Distribution Percentage\nدرصد توزیع کلاس‌ها')
+plt.ylabel('')
 
+plt.tight_layout()
+plt.show()
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
+# Visualize amount distribution for fraud vs normal transactions
+# تجسم توزیع مبلغ برای تراکنش‌های تقلبی و عادی
+plt.figure(figsize=(12, 5))
 
+plt.subplot(1, 2, 1)
+df[df['Class'] == 0]['Amount'].hist(bins=50, alpha=0.7, label='Normal\nعادی')
+df[df['Class'] == 1]['Amount'].hist(bins=50, alpha=0.7, label='Fraud\nتقلب')
+plt.xlabel('Transaction Amount\nمبلغ تراکنش')
+plt.ylabel('Frequency\nفرکانس')
+plt.title('Amount Distribution by Class\nتوزیع مبلغ بر اساس کلاس')
+plt.legend()
 
-class SimpleDataSet(Dataset):
-    def __init__(self,features, lables):
-        self.features = torch.FloatTensor(features)
-        self.labels = torch.LongTensor(lables)
-    
-    def __len__(self):
-        return len(self.labels)
-    
-    def __getitem__(self, idx):
-        return self.features[idx], self.labels[idx]
-    
+plt.subplot(1, 2, 2)
+df.boxplot(column='Amount', by='Class')
+plt.title('Amount Distribution by Class (Boxplot)\nتوزیع مبلغ بر اساس کلاس (جعبه‌ای)')
+plt.suptitle('')
 
-train_dataset = SimpleDataSet(X_train,y_train)
-test_dataset = SimpleDataSet(X_test,y_test)
-
-batch_size = 120
-train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle = True)
-test_loader = DataLoader(test_dataset,batch_size = batch_size)
+plt.tight_layout()
+plt.show()
 
