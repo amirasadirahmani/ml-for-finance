@@ -118,3 +118,64 @@ y_test_tensor = torch.FloatTensor(y_test.values)
 
 print("Data converted to PyTorch tensors!")
 print("داده‌ها به تنسورهای PyTorch تبدیل شدند!")
+
+
+class AdvancedFraudDetectionNN(nn.Module):
+    def __init__(self, input_size, hidden_sizes=[256, 128, 64, 32], dropout_rate=0.3):
+        """
+        Advanced Neural Network for Fraud Detection
+        شبکه عصبی پیشرفته برای تشخیص تقلب
+        
+        Args:
+            input_size: Number of input features / تعداد ویژگی‌های ورودی
+            hidden_sizes: List of hidden layer sizes / لیست اندازه لایه‌های مخفی
+            dropout_rate: Dropout probability / احتمال dropout
+        """
+        super(AdvancedFraudDetectionNN, self).__init__()
+        
+        layers = []
+        prev_size = input_size
+        
+        # Create hidden layers with batch normalization and dropout
+        # ایجاد لایه‌های مخفی با نرمال‌سازی دسته‌ای و dropout
+        for hidden_size in hidden_sizes:
+            layers.extend([
+                nn.Linear(prev_size, hidden_size),
+                nn.BatchNorm1d(hidden_size),    # Batch normalization / نرمال‌سازی دسته‌ای
+                nn.ReLU(),                      # ReLU activation / فعال‌سازی ReLU
+                nn.Dropout(dropout_rate)        # Dropout for regularization / Dropout برای تنظیم‌سازی
+            ])
+            prev_size = hidden_size
+        
+        # Output layer
+        # لایه خروجی
+        layers.append(nn.Linear(prev_size, 1))
+        layers.append(nn.Sigmoid())             # Sigmoid for binary classification / Sigmoid برای طبقه‌بندی دوتایی
+        
+        self.network = nn.Sequential(*layers)
+    
+    def forward(self, x):
+        """
+        Forward pass through the network
+        عبور رو به جلو از شبکه
+        """
+        return self.network(x)
+
+# Initialize the model
+# راه‌اندازی مدل
+input_size = X_train_tensor.shape[1]
+model = AdvancedFraudDetectionNN(input_size)
+
+print(f"Model architecture:")
+print(f"معماری مدل:")
+print(model)
+
+# Count total parameters
+# شمارش کل پارامترها
+total_params = sum(p.numel() for p in model.parameters())
+trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+print(f"\nTotal parameters: {total_params:,}")
+print(f"کل پارامترها: {total_params:,}")
+print(f"Trainable parameters: {trainable_params:,}")
+print(f"پارامترهای قابل آموزش: {trainable_params:,}")
