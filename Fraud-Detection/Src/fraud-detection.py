@@ -179,3 +179,33 @@ print(f"\nTotal parameters: {total_params:,}")
 print(f"کل پارامترها: {total_params:,}")
 print(f"Trainable parameters: {trainable_params:,}")
 print(f"پارامترهای قابل آموزش: {trainable_params:,}")
+
+
+# Calculate class weights for imbalanced dataset
+# محاسبه وزن کلاس‌ها برای دیتاست نامتعادل
+class_counts = Counter(y_train)
+total_samples = len(y_train)
+weight_for_0 = total_samples / (2 * class_counts[0])
+weight_for_1 = total_samples / (2 * class_counts[1])
+
+print(f"Class weights - Normal: {weight_for_0:.4f}, Fraud: {weight_for_1:.4f}")
+print(f"وزن کلاس‌ها - عادی: {weight_for_0:.4f}, تقلب: {weight_for_1:.4f}")
+
+# Create weighted loss function
+# ایجاد تابع هزینه وزن‌دار
+class_weights = torch.FloatTensor([weight_for_0, weight_for_1])
+criterion = nn.BCELoss()  # Binary Cross Entropy Loss / تابع هزینه آنتروپی متقابل دوتایی
+
+# Initialize optimizer with learning rate scheduling
+# راه‌اندازی بهینه‌ساز با زمان‌بندی نرخ یادگیری
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)  # L2 regularization
+                                                                        # تنظیم‌سازی L2
+
+# Learning rate scheduler
+# زمان‌بند نرخ یادگیری
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, mode='min', factor=0.5, patience=10, verbose=True
+)
+
+print("Loss function and optimizer initialized!")
+print("تابع هزینه و بهینه‌ساز راه‌اندازی شدند!")
