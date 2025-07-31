@@ -209,3 +209,39 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(
 
 print("Loss function and optimizer initialized!")
 print("تابع هزینه و بهینه‌ساز راه‌اندازی شدند!")
+
+
+# Create custom dataset class
+# ایجاد کلاس دیتاست سفارشی
+class FraudDataset(Dataset):
+    def __init__(self, X, y):
+        """
+        Custom dataset for fraud detection
+        دیتاست سفارشی برای تشخیص تقلب
+        """
+        self.X = X
+        self.y = y
+    
+    def __len__(self):
+        return len(self.X)
+    
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
+
+# Create datasets
+# ایجاد دیتاست‌ها
+train_dataset = FraudDataset(X_train_tensor, y_train_tensor)
+test_dataset = FraudDataset(X_test_tensor, y_test_tensor)
+
+# Create data loaders
+# ایجاد بارگذارهای داده
+batch_size = 512
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+print(f"Data loaders created with batch size: {batch_size}")
+print(f"بارگذارهای داده با اندازه دسته {batch_size} ایجاد شدند")
+print(f"Number of training batches: {len(train_loader)}")
+print(f"تعداد دسته‌های آموزش: {len(train_loader)}")
+print(f"Number of test batches: {len(test_loader)}")
+print(f"تعداد دسته‌های تست: {len(test_loader)}")
