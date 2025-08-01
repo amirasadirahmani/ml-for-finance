@@ -245,3 +245,88 @@ print(f"Number of training batches: {len(train_loader)}")
 print(f"تعداد دسته‌های آموزش: {len(train_loader)}")
 print(f"Number of test batches: {len(test_loader)}")
 print(f"تعداد دسته‌های تست: {len(test_loader)}")
+
+
+def train_model(model, train_loader, criterion, optimizer, scheduler, num_epochs=100):
+    """
+    Train the fraud detection model
+    آموزش مدل تشخیص تقلب
+    
+    Args:
+        model: Neural network model / مدل شبکه عصبی
+        train_loader: Training data loader / بارگذار داده‌های آموزش
+        criterion: Loss function / تابع هزینه
+        optimizer: Optimizer / بهینه‌ساز
+        scheduler: Learning rate scheduler / زمان‌بند نرخ یادگیری
+        num_epochs: Number of training epochs / تعداد دوره‌های آموزش
+    """
+    
+    model.train()  # Set model to training mode / تنظیم مدل در حالت آموزش
+    train_losses = []
+    train_accuracies = []
+    
+    print("Starting training...")
+    print("شروع آموزش...")
+    
+    for epoch in range(num_epochs):
+        epoch_loss = 0.0
+        epoch_correct = 0
+        epoch_total = 0
+        
+        for batch_idx, (data, target) in enumerate(train_loader):
+            # Zero the gradients
+            # صفر کردن گرادیان‌ها
+            optimizer.zero_grad()
+            
+            # Forward pass
+            # عبور رو به جلو
+            output = model(data).squeeze()
+            
+            # Calculate loss
+            # محاسبه هزینه
+            loss = criterion(output, target)
+            
+            # Backward pass
+            # عبور رو به عقب
+            loss.backward()
+            
+            # Update weights
+            # به‌روزرسانی وزن‌ها
+            optimizer.step()
+            
+            # Statistics
+            # آمارها
+            epoch_loss += loss.item()
+            predicted = (output > 0.5).float()
+            epoch_correct += (predicted == target).sum().item()
+            epoch_total += target.size(0)
+        
+        # Calculate epoch metrics
+        # محاسبه معیارهای دوره
+        avg_loss = epoch_loss / len(train_loader)
+        accuracy = epoch_correct / epoch_total
+        
+        train_losses.append(avg_loss)
+        train_accuracies.append(accuracy)
+        
+        # Update learning rate
+        # به‌روزرسانی نرخ یادگیری
+        scheduler.step(avg_loss)
+        
+        # Print progress
+        # نمایش پیشرفت
+        if (epoch + 1) % 10 == 0:
+            print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}, Accuracy: {accuracy:.4f}')
+            print(f'دوره [{epoch+1}/{num_epochs}], هزینه: {avg_loss:.4f}, دقت: {accuracy:.4f}')
+    
+    print("Training completed!")
+    print("آموزش تکمیل شد!")
+    
+    return train_losses, train_accuracies
+
+# Train the model
+# آموزش مدل
+num_epochs = 100
+train_losses, train_accuracies = train_model(
+    model, train_loader, criterion, optimizer, scheduler, num_epochs
+)
