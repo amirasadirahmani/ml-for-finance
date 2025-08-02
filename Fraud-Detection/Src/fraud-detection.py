@@ -330,3 +330,69 @@ num_epochs = 100
 train_losses, train_accuracies = train_model(
     model, train_loader, criterion, optimizer, scheduler, num_epochs
 )
+
+
+def evaluate_model(model, test_loader, threshold=0.5):
+    """
+    Evaluate the trained model
+    ارزیابی مدل آموزش‌دیده
+    
+    Args:
+        model: Trained model / مدل آموزش‌دیده
+        test_loader: Test data loader / بارگذار داده‌های تست
+        threshold: Classification threshold / آستانه طبقه‌بندی
+    """
+    
+    model.eval()  # Set model to evaluation mode / تنظیم مدل در حالت ارزیابی
+    
+    all_predictions = []
+    all_probabilities = []
+    all_targets = []
+    
+    print("Evaluating model...")
+    print("ارزیابی مدل...")
+    
+    with torch.no_grad():  # Disable gradient computation / غیرفعال کردن محاسبه گرادیان
+        for data, target in test_loader:
+            # Forward pass
+            # عبور رو به جلو
+            output = model(data).squeeze()
+            
+            # Store results
+            # ذخیره نتایج
+            all_probabilities.extend(output.cpu().numpy())
+            all_predictions.extend((output > threshold).cpu().numpy())
+            all_targets.extend(target.cpu().numpy())
+    
+    return np.array(all_predictions), np.array(all_probabilities), np.array(all_targets)
+
+# Evaluate the model
+# ارزیابی مدل
+predictions, probabilities, targets = evaluate_model(model, test_loader)
+
+# Calculate metrics
+# محاسبه معیارها
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+accuracy = accuracy_score(targets, predictions)
+precision = precision_score(targets, predictions)
+recall = recall_score(targets, predictions)
+f1 = f1_score(targets, predictions)
+auc_score = roc_auc_score(targets, probabilities)
+
+print("\n" + "="*50)
+print("MODEL EVALUATION RESULTS")
+print("نتایج ارزیابی مدل")
+print("="*50)
+
+print(f"Accuracy / دقت: {accuracy:.4f}")
+print(f"Precision / صحت: {precision:.4f}")
+print(f"Recall / بازخوانی: {recall:.4f}")
+print(f"F1-Score / امتیاز F1: {f1:.4f}")
+print(f"AUC-ROC / منطقه زیر منحنی: {auc_score:.4f}")
+
+# Detailed classification report
+# گزارش تفصیلی طبقه‌بندی
+print("\nDetailed Classification Report:")
+print("گزارش تفصیلی طبقه‌بندی:")
+print(classification_report(targets, predictions, target_names=['Normal', 'Fraud']))
