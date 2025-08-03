@@ -396,3 +396,104 @@ print(f"AUC-ROC / منطقه زیر منحنی: {auc_score:.4f}")
 print("\nDetailed Classification Report:")
 print("گزارش تفصیلی طبقه‌بندی:")
 print(classification_report(targets, predictions, target_names=['Normal', 'Fraud']))
+
+
+# Plot training curves
+# رسم منحنی‌های آموزش
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+plt.plot(train_losses)
+plt.title('Training Loss\nهزینه آموزش')
+plt.xlabel('Epoch\nدوره')
+plt.ylabel('Loss\nهزینه')
+plt.grid(True)
+
+plt.subplot(1, 3, 2)
+plt.plot(train_accuracies)
+plt.title('Training Accuracy\nدقت آموزش')
+plt.xlabel('Epoch\nدوره')
+plt.ylabel('Accuracy\nدقت')
+plt.grid(True)
+
+# Confusion Matrix
+# ماتریس ابهام
+plt.subplot(1, 3, 3)
+cm = confusion_matrix(targets, predictions)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Normal', 'Fraud'], 
+            yticklabels=['Normal', 'Fraud'])
+plt.title('Confusion Matrix\nماتریس ابهام')
+plt.xlabel('Predicted\nپیش‌بینی‌شده')
+plt.ylabel('Actual\nواقعی')
+
+plt.tight_layout()
+plt.show()
+
+# ROC Curve
+# منحنی ROC
+from sklearn.metrics import roc_curve
+
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+fpr, tpr, _ = roc_curve(targets, probabilities)
+plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {auc_score:.4f})')
+plt.plot([0, 1], [0, 1], 'k--', label='Random')
+plt.xlabel('False Positive Rate\nنرخ مثبت کاذب')
+plt.ylabel('True Positive Rate\nنرخ مثبت واقعی')
+plt.title('ROC Curve\nمنحنی ROC')
+plt.legend()
+plt.grid(True)
+
+# Precision-Recall Curve
+# منحنی صحت-بازخوانی
+plt.subplot(1, 2, 2)
+precision_vals, recall_vals, _ = precision_recall_curve(targets, probabilities)
+plt.plot(recall_vals, precision_vals, label=f'PR Curve')
+plt.xlabel('Recall\nبازخوانی')
+plt.ylabel('Precision\nصحت')
+plt.title('Precision-Recall Curve\nمنحنی صحت-بازخوانی')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+# Distribution of prediction probabilities
+# توزیع احتمالات پیش‌بینی
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+normal_probs = probabilities[targets == 0]
+fraud_probs = probabilities[targets == 1]
+
+plt.hist(normal_probs, bins=50, alpha=0.7, label='Normal\nعادی', density=True)
+plt.hist(fraud_probs, bins=50, alpha=0.7, label='Fraud\nتقلب', density=True)
+plt.xlabel('Prediction Probability\nاحتمال پیش‌بینی')
+plt.ylabel('Density\nتراکم')
+plt.title('Distribution of Prediction Probabilities\nتوزیع احتمالات پیش‌بینی')
+plt.legend()
+plt.grid(True)
+
+# Feature importance (using model weights)
+# اهمیت ویژگی‌ها (با استفاده از وزن‌های مدل)
+plt.subplot(1, 2, 2)
+first_layer_weights = model.network[0].weight.data.abs().mean(dim=0).cpu().numpy()
+feature_names = [f'Feature {i+1}' for i in range(len(first_layer_weights))]
+
+# Show top 10 features
+# نمایش 10 ویژگی برتر
+top_indices = np.argsort(first_layer_weights)[-10:]
+top_weights = first_layer_weights[top_indices]
+top_features = [feature_names[i] for i in top_indices]
+
+plt.barh(range(len(top_weights)), top_weights)
+plt.yticks(range(len(top_weights)), top_features)
+plt.xlabel('Average Absolute Weight\nمیانگین وزن مطلق')
+plt.title('Top 10 Feature Importance\nاهمیت 10 ویژگی برتر')
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
