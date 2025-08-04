@@ -497,3 +497,61 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+
+def predict_fraud(model, scaler, transaction_data):
+    """
+    Predict fraud for new transaction data
+    پیش‌بینی تقلب برای داده‌های تراکنش جدید
+    
+    Args:
+        model: Trained model / مدل آموزش‌دیده
+        scaler: Fitted scaler / نرمال‌ساز تنظیم‌شده
+        transaction_data: New transaction data / داده‌های تراکنش جدید
+    """
+    
+    model.eval()
+    
+    # Normalize the data using the fitted scaler
+    # نرمال‌سازی داده‌ها با استفاده از نرمال‌ساز تنظیم‌شده
+    transaction_scaled = scaler.transform(transaction_data.reshape(1, -1))
+    
+    # Convert to tensor
+    # تبدیل به تنسور
+    transaction_tensor = torch.FloatTensor(transaction_scaled)
+    
+    with torch.no_grad():
+        # Get prediction probability
+        # دریافت احتمال پیش‌بینی
+        probability = model(transaction_tensor).item()
+        
+        # Make prediction
+        # انجام پیش‌بینی
+        prediction = 1 if probability > 0.5 else 0
+    
+    return prediction, probability
+
+# Example usage with test data
+# نمونه استفاده با داده‌های تست
+print("\nTesting with sample transactions:")
+print("تست با تراکنش‌های نمونه:")
+
+# Test with a few random samples from test set
+# تست با چند نمونه تصادفی از مجموعه تست
+sample_indices = np.random.choice(len(X_test), 5, replace=False)
+
+for i, idx in enumerate(sample_indices):
+    sample_data = X_test.iloc[idx].values
+    actual_label = y_test.iloc[idx]
+    
+    prediction, probability = predict_fraud(model, scaler, sample_data)
+    
+    print(f"\nSample {i+1}:")
+    print(f"نمونه {i+1}:")
+    print(f"  Actual: {'Fraud' if actual_label == 1 else 'Normal'}")
+    print(f"  واقعی: {'تقلب' if actual_label == 1 else 'عادی'}")
+    print(f"  Predicted: {'Fraud' if prediction == 1 else 'Normal'}")
+    print(f"  پیش‌بینی: {'تقلب' if prediction == 1 else 'عادی'}")
+    print(f"  Probability: {probability:.4f}")
+    print(f"  احتمال: {probability:.4f}")
+    print(f"  Match: {'✓' if prediction == actual_label else '✗'}")
+    print(f"  تطبیق: {'✓' if prediction == actual_label else '✗'}")
