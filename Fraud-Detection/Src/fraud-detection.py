@@ -497,3 +497,119 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+
+def predict_fraud(model, scaler, transaction_data):
+    """
+    Predict fraud for new transaction data
+    پیش‌بینی تقلب برای داده‌های تراکنش جدید
+    
+    Args:
+        model: Trained model / مدل آموزش‌دیده
+        scaler: Fitted scaler / نرمال‌ساز تنظیم‌شده
+        transaction_data: New transaction data / داده‌های تراکنش جدید
+    """
+    
+    model.eval()
+    
+    # Normalize the data using the fitted scaler
+    # نرمال‌سازی داده‌ها با استفاده از نرمال‌ساز تنظیم‌شده
+    transaction_scaled = scaler.transform(transaction_data.reshape(1, -1))
+    
+    # Convert to tensor
+    # تبدیل به تنسور
+    transaction_tensor = torch.FloatTensor(transaction_scaled)
+    
+    with torch.no_grad():
+        # Get prediction probability
+        # دریافت احتمال پیش‌بینی
+        probability = model(transaction_tensor).item()
+        
+        # Make prediction
+        # انجام پیش‌بینی
+        prediction = 1 if probability > 0.5 else 0
+    
+    return prediction, probability
+
+# Example usage with test data
+# نمونه استفاده با داده‌های تست
+print("\nTesting with sample transactions:")
+print("تست با تراکنش‌های نمونه:")
+
+# Test with a few random samples from test set
+# تست با چند نمونه تصادفی از مجموعه تست
+sample_indices = np.random.choice(len(X_test), 5, replace=False)
+
+for i, idx in enumerate(sample_indices):
+    sample_data = X_test.iloc[idx].values
+    actual_label = y_test.iloc[idx]
+    
+    prediction, probability = predict_fraud(model, scaler, sample_data)
+    
+    print(f"\nSample {i+1}:")
+    print(f"نمونه {i+1}:")
+    print(f"  Actual: {'Fraud' if actual_label == 1 else 'Normal'}")
+    print(f"  واقعی: {'تقلب' if actual_label == 1 else 'عادی'}")
+    print(f"  Predicted: {'Fraud' if prediction == 1 else 'Normal'}")
+    print(f"  پیش‌بینی: {'تقلب' if prediction == 1 else 'عادی'}")
+    print(f"  Probability: {probability:.4f}")
+    print(f"  احتمال: {probability:.4f}")
+    print(f"  Match: {'✓' if prediction == actual_label else '✗'}")
+    print(f"  تطبیق: {'✓' if prediction == actual_label else '✗'}")
+    
+    # Save the trained model and scaler
+# ذخیره مدل آموزش‌دیده و نرمال‌ساز
+import pickle
+
+# Save PyTorch model
+# ذخیره مدل PyTorch
+torch.save({
+    'model_state_dict': model.state_dict(),
+    'input_size': input_size,
+    'model_architecture': {
+        'hidden_sizes': [256, 128, 64, 32],
+        'dropout_rate': 0.3
+    }
+}, 'fraud_detection_model.pth')
+
+# Save scaler
+# ذخیره نرمال‌ساز
+with open('fraud_detection_scaler.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
+
+print("Model and scaler saved successfully!")
+print("مدل و نرمال‌ساز با موفقیت ذخیره شدند!")
+
+# Function to load model for future use
+# تابع بارگذاری مدل برای استفاده آتی
+def load_fraud_model(model_path, scaler_path):
+    """
+    Load trained fraud detection model
+    بارگذاری مدل آموزش‌دیده تشخیص تقلب
+    """
+    
+    # Load model
+    # بارگذاری مدل
+    checkpoint = torch.load(model_path)
+    
+    # Recreate model architecture
+    # بازسازی معماری مدل
+    model = AdvancedFraudDetectionNN(
+        input_size=checkpoint['input_size'],
+        hidden_sizes=checkpoint['model_architecture']['hidden_sizes'],
+        dropout_rate=checkpoint['model_architecture']['dropout_rate']
+    )
+    
+    # Load model weights
+    # بارگذاری وزن‌های مدل
+    model.load_state_dict(checkpoint['model_state_dict'])
+    model.eval()
+    
+    # Load scaler
+    # بارگذاری نرمال‌ساز
+    with open(scaler_path, 'rb') as f:
+        scaler = pickle.load(f)
+    
+    return model, scaler
+
+print("\nTo load the model in the future, use:")
+print("model, scaler = load_fraud_model('fraud_detection_model.pth', 'fraud_detection_scaler.pkl')")
