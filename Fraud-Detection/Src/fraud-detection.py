@@ -555,3 +555,61 @@ for i, idx in enumerate(sample_indices):
     print(f"  احتمال: {probability:.4f}")
     print(f"  Match: {'✓' if prediction == actual_label else '✗'}")
     print(f"  تطبیق: {'✓' if prediction == actual_label else '✗'}")
+    
+    # Save the trained model and scaler
+# ذخیره مدل آموزش‌دیده و نرمال‌ساز
+import pickle
+
+# Save PyTorch model
+# ذخیره مدل PyTorch
+torch.save({
+    'model_state_dict': model.state_dict(),
+    'input_size': input_size,
+    'model_architecture': {
+        'hidden_sizes': [256, 128, 64, 32],
+        'dropout_rate': 0.3
+    }
+}, 'fraud_detection_model.pth')
+
+# Save scaler
+# ذخیره نرمال‌ساز
+with open('fraud_detection_scaler.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
+
+print("Model and scaler saved successfully!")
+print("مدل و نرمال‌ساز با موفقیت ذخیره شدند!")
+
+# Function to load model for future use
+# تابع بارگذاری مدل برای استفاده آتی
+def load_fraud_model(model_path, scaler_path):
+    """
+    Load trained fraud detection model
+    بارگذاری مدل آموزش‌دیده تشخیص تقلب
+    """
+    
+    # Load model
+    # بارگذاری مدل
+    checkpoint = torch.load(model_path)
+    
+    # Recreate model architecture
+    # بازسازی معماری مدل
+    model = AdvancedFraudDetectionNN(
+        input_size=checkpoint['input_size'],
+        hidden_sizes=checkpoint['model_architecture']['hidden_sizes'],
+        dropout_rate=checkpoint['model_architecture']['dropout_rate']
+    )
+    
+    # Load model weights
+    # بارگذاری وزن‌های مدل
+    model.load_state_dict(checkpoint['model_state_dict'])
+    model.eval()
+    
+    # Load scaler
+    # بارگذاری نرمال‌ساز
+    with open(scaler_path, 'rb') as f:
+        scaler = pickle.load(f)
+    
+    return model, scaler
+
+print("\nTo load the model in the future, use:")
+print("model, scaler = load_fraud_model('fraud_detection_model.pth', 'fraud_detection_scaler.pkl')")
