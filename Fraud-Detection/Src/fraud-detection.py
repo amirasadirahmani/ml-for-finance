@@ -613,3 +613,54 @@ def load_fraud_model(model_path, scaler_path):
 
 print("\nTo load the model in the future, use:")
 print("model, scaler = load_fraud_model('fraud_detection_model.pth', 'fraud_detection_scaler.pkl')")
+
+
+
+print("\n" + "="*70)
+print("FRAUD DETECTION SYSTEM SUMMARY")
+print("خلاصه سیستم تشخیص تقلب")
+print("="*70)
+
+print(f"""
+Key Features of this Advanced Fraud Detection System:
+ویژگی‌های کلیدی این سیستم پیشرفته تشخیص تقلب:
+
+1. Deep Neural Network with multiple hidden layers
+   شبکه عصبی عمیق با چندین لایه مخفی
+
+2. Batch Normalization for stable training
+   نرمال‌سازی دسته‌ای برای آموزش پایدار
+
+3. Dropout for regularization and preventing overfitting
+   Dropout برای تنظیم‌سازی و جلوگیری از بیش‌برازش
+
+4. Proper data normalization (fit_transform on train, transform on test)
+   نرمال‌سازی صحیح داده‌ها (fit_transform روی آموزش، transform روی تست)
+
+5. Learning rate scheduling for better convergence
+   زمان‌بندی نرخ یادگیری برای همگرایی بهتر
+
+6. Comprehensive evaluation with multiple metrics
+   ارزیابی جامع با معیارهای متعدد
+
+7. Visualization of results and model performance
+   تجسم نتایج و عملکرد مدل
+
+8. Model persistence for future use
+   ماندگاری مدل برای استفاده آتی
+
+Final Model Performance:
+عملکرد نهایی مدل:
+- Accuracy: {accuracy:.4f}
+- Precision: {precision:.4f}  
+- Recall: {recall:.4f}
+- F1-Score: {f1:.4f}
+- AUC-ROC: {auc_score:.4f}
+
+This system can effectively detect fraudulent transactions with high accuracy
+while maintaining good precision and recall balance.
+این سیستم می‌تواند تراکنش‌های تقلبی را با دقت بالا شناسایی کند
+در حالی که تعادل خوبی بین صحت و بازخوانی حفظ می‌کند.
+""")
+
+print("="*70)
